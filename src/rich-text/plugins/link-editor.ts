@@ -110,7 +110,7 @@ export class LinkEditor extends PluginInterfaceView<
             this.validate((e.target as HTMLInputElement).value);
         });
     }
-    protected key: LinkEditorPluginKey;
+    protected declare key: LinkEditorPluginKey;
 
     validate(href: string): boolean {
         const valid = this.validateLink(href);

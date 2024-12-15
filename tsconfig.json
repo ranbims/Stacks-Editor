@@ -2,7 +2,10 @@
     "extends": "@stackoverflow/tsconfig/tsconfig.json",
     "compilerOptions": {
         "outDir": "./dist/",
-        "strictBindCallApply": true
+        "strictBindCallApply": true,
+        "target": "esnext",
+        "strict": false,
+        "noImplicitAny": false,
     },
     "include": ["src/**/*"]
 }

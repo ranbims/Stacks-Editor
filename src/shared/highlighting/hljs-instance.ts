@@ -8,7 +8,6 @@ import hljs, { type HLJSApi } from "highlight.js";
  */
 
 export function getHljsInstance(): HLJSApi {
-    // @ts-expect-error
     const hljsInstance: HLJSApi = (globalThis.hljs as HLJSApi) ?? hljs;
 
     return hljsInstance && hljsInstance.highlight ? hljsInstance : null;
