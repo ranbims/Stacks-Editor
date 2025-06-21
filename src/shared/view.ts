@@ -6,6 +6,7 @@ import type { EditorView } from "prosemirror-view";
 import { EditorPlugin } from "./editor-plugin";
 import type { ImageUploadOptions } from "./prosemirror-plugins/image-upload";
 import { setAttributesOnElement, stackOverflowValidateLink } from "./utils";
+import { Transaction } from "prosemirror-state";
 
 /** Describes each distinct editor type the StacksEditor handles */
 export enum EditorType {
@@ -46,6 +47,8 @@ export interface CommonViewOptions {
     imageUpload?: ImageUploadOptions;
     /** Externally written plugins to add to the editor */
     editorPlugins?: EditorPlugin[];
+    /** The callback when the content changed. */
+    onContentChanged?: (content: Node) => void;
 }
 
 /** Configuration options for parsing and rendering [tag:*] and [meta-tag:*] syntax */
@@ -123,6 +126,7 @@ export interface View {
 /** Abstract class that contains shared functionality for implementing View */
 export abstract class BaseView implements View {
     editorView: EditorView;
+    protected abstract options: CommonViewOptions
 
     get document(): Node {
         return this.editorView.state.doc;
@@ -176,6 +180,22 @@ export abstract class BaseView implements View {
 
         // add the rest of the attributes passed in via options
         setAttributesOnElement(el, options.elementAttributes || {});
+    }
+
+    /**
+     * Initializes the dispatchTransaction function on the editorView
+     * This function should only be called after the editorView has been created
+     */
+    protected initializeDispatchTransaction() {
+        this.editorView.props.dispatchTransaction = (transaction: Transaction) => {
+            const view = this.editorView;
+            const oldState = view.state;
+            const newState = oldState.apply(transaction); 
+            view.updateState(newState);
+            if (this.options.onContentChanged && newState.doc !== oldState.doc) {
+                this.options.onContentChanged(newState.doc);
+            }
+        }
     }
 
     /**

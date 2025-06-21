@@ -1,7 +1,7 @@
 import { history } from "prosemirror-history";
 import { MarkdownParser, MarkdownSerializer } from "prosemirror-markdown";
 import { Node as ProseMirrorNode, Schema } from "prosemirror-model";
-import { EditorState } from "prosemirror-state";
+import { EditorState, Transaction } from "prosemirror-state";
 import { Transform } from "prosemirror-transform";
 import { EditorView } from "prosemirror-view";
 import { CodeBlockHighlightPlugin } from "../shared/highlighting/highlight-plugin";
@@ -54,7 +54,7 @@ export interface RichTextOptions extends CommonViewOptions {
  * Implements an WYSIWYG-style editor. Content will be rendered immediately by prosemirror but the in- and output will still be markdown
  */
 export class RichTextEditor extends BaseView {
-    private options: RichTextOptions;
+    protected options: RichTextOptions;
     private markdownSerializer: MarkdownSerializer;
     private markdownParser: MarkdownParser;
     private finalizedSchema: Schema;
@@ -176,6 +176,7 @@ export class RichTextEditor extends BaseView {
                 plugins: [],
             }
         );
+        this.initializeDispatchTransaction();
 
         log(
             "prosemirror rich-text document",

@@ -64,7 +64,7 @@ export interface CommonmarkOptions extends CommonViewOptions {
 }
 
 export class CommonmarkEditor extends BaseView {
-    private options: CommonmarkOptions;
+    protected options: CommonmarkOptions;
 
     constructor(
         target: Node,
@@ -122,7 +122,7 @@ export class CommonmarkEditor extends BaseView {
                 plugins: [],
             }
         );
-
+        this.initializeDispatchTransaction();
         log(
             "prosemirror commonmark document",
             this.editorView.state.doc.toJSON()
