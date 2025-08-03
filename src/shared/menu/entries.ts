@@ -247,6 +247,204 @@ const moreFormattingDropdown = (schema: Schema, options: CommonViewOptions) =>
         )
     );
 
+const moreFormattingDropdownForSNotes = (schema: Schema, options: CommonViewOptions) =>
+    makeMenuDropdown(
+        "EllipsisHorizontal",
+        _t("commands.moreFormatting"),
+        "more-formatting-dropdown",
+        () => true,
+        () => false,
+        makeDropdownItem(
+            _t("commands.link", { shortcut: getShortcut("Mod-L") }),
+            {
+                richText: insertRichTextLinkCommand,
+                commonmark: insertCommonmarkLinkCommand,
+            },
+            "insert-link-btn"
+        ),
+        makeDropdownItem(
+            _t("commands.image", { shortcut: getShortcut("Mod-G") }),
+            {
+                richText: insertRichTextImageCommand,
+                commonmark: insertCommonmarkImageCommand,
+            },
+            "insert-image-btn"
+        ),
+        makeDropdownItem(
+            _t("commands.tagLink", { shortcut: getShortcut("Mod-[") }),
+            {
+                richText: {
+                    command: toggleTagLinkCommand(
+                        options.parserFeatures?.tagLinks,
+                        false
+                    ),
+                    active: nodeTypeActive(schema.nodes.tagLink),
+                },
+                commonmark: insertTagLinkCommand(
+                    options.parserFeatures?.tagLinks,
+                    false
+                ),
+            },
+            "tag-btn"
+        ),
+        makeDropdownItem(
+            _t("commands.kbd", { shortcut: getShortcut("Mod-'") }),
+            {
+                richText: {
+                    command: toggleMark(schema.marks.kbd),
+                    active: markActive(schema.marks.kbd),
+                },
+                commonmark: kbdCommand,
+            },
+            "kbd-btn"
+        ),
+        makeDropdownItem(
+            _t("commands.inline_code.title", { shortcut: getShortcut("Mod-K") }),
+            {
+                richText: {
+                    command: toggleMark(schema.marks.code),
+                    active: markActive(schema.marks.code),
+                },
+                commonmark: inlineCodeCommand,
+            },
+            "code-btn"
+        ),
+        makeDropdownItem(
+            _t("commands.code_block.title", { shortcut: getShortcut("Mod-M") }),
+            {
+                richText: {
+                    command: toggleBlockType(schema.nodes.code_block),
+                    active: nodeTypeActive(schema.nodes.code_block),
+                },
+                commonmark: insertCodeblockCommand,
+            },
+            "code-block-btn"
+        ),
+        makeDropdownItem(
+            _t("commands.table_insert", { shortcut: getShortcut("Mod-E") }),
+            {
+                richText: {
+                    command: insertRichTextTableCommand,
+                    visible: (state: EditorState) =>
+                        !inTable(state.schema, state.selection),
+                },
+                commonmark: insertCommonmarkTableCommand,
+            },
+            "insert-table-btn"
+        ),
+        makeDropdownItem(
+            _t("commands.horizontal_rule", { shortcut: getShortcut("Mod-R") }),
+            {
+                richText: insertRichTextHorizontalRuleCommand,
+                commonmark: insertCommonmarkHorizontalRuleCommand,
+            },
+            "horizontal-rule-btn"
+        )
+    );
+
+export const createMenuEntriesForSnotes = (
+    schema: Schema,
+    options: CommonViewOptions,
+): MenuBlock[] => [
+    {
+        name: "snotes",
+        priority: 0,
+        entries: [
+            {
+                key: "toggleBold",
+                richText: {
+                    command: toggleMark(schema.marks.strong),
+                    active: markActive(schema.marks.strong),
+                },
+                commonmark: boldCommand,
+                display: makeMenuButton(
+                    "Bold",
+                    _t("commands.bold", { shortcut: getShortcut("Mod-B") }),
+                    "bold-btn"
+                ),
+            },
+            {
+                key: "toggleEmphasis",
+                richText: {
+                    command: toggleMark(schema.marks.em),
+                    active: markActive(schema.marks.em),
+                },
+                commonmark: emphasisCommand,
+                display: makeMenuButton(
+                    "Italic",
+                    _t("commands.emphasis", { shortcut: getShortcut("Mod-I") }),
+                    "italic-btn"
+                ),
+            },
+            {
+                key: "toggleStrike",
+                richText: {
+                    command: toggleMark(schema.marks.strike),
+                    active: markActive(schema.marks.strike),
+                },
+                commonmark: strikethroughCommand,
+                display: makeMenuButton(
+                    "Strikethrough",
+                    _t("commands.strikethrough"),
+                    "strike-btn"
+                ),
+            },
+            {
+                key: "toggleBlockquote",
+                richText: {
+                    command: toggleWrapIn(schema.nodes.blockquote),
+                    active: nodeTypeActive(schema.nodes.blockquote),
+                },
+                commonmark: blockquoteCommand,
+                display: makeMenuButton(
+                    "Quote",
+                    _t("commands.blockquote", {
+                        shortcut: getShortcut("Mod-Q"),
+                    }),
+                    "blockquote-btn"
+                ),
+            },
+            {
+                key: "toggleUnorderedList",
+                richText: {
+                    command: toggleList(
+                        schema.nodes.bullet_list,
+                        schema.nodes.list_item
+                    ),
+                    active: nodeTypeActive(schema.nodes.bullet_list),
+                },
+                commonmark: unorderedListCommand,
+                display: makeMenuButton(
+                    "UnorderedList",
+                    _t("commands.unordered_list", {
+                        shortcut: getShortcut("Mod-U"),
+                    }),
+                    "bullet-list-btn"
+                ),
+            },
+            {
+                key: "toggleOrderedList",
+                richText: {
+                    command: toggleList(
+                        schema.nodes.ordered_list,
+                        schema.nodes.list_item
+                    ),
+                    active: nodeTypeActive(schema.nodes.ordered_list),
+                },
+                commonmark: orderedListCommand,
+                display: makeMenuButton(
+                    "OrderedList",
+                    _t("commands.ordered_list", {
+                        shortcut: getShortcut("Mod-O"),
+                    }),
+                    "numbered-list-btn"
+                ),
+            },
+            moreFormattingDropdownForSNotes(schema, options),
+        ]
+    }
+]
+
 /**
  * Creates all menu entries for both the rich-text and commonmark editors
  * @param schema The finalized schema for the current editor
@@ -254,7 +452,7 @@ const moreFormattingDropdown = (schema: Schema, options: CommonViewOptions) =>
  * @param editorType The current editor type
  * @internal
  */
-export const createMenuEntries = (
+export const createMenuEntriesForStacksEditor = (
     schema: Schema,
     options: CommonViewOptions,
     editorType: EditorType
@@ -530,3 +728,23 @@ export const createMenuEntries = (
         ],
     },
 ];
+
+/**
+ * Creates all menu entries for both the rich-text and commonmark editors
+ * @param schema The finalized schema for the current editor
+ * @param options The options for the editor
+ * @param editorType The current editor type
+ * @internal
+ */
+export const createMenuEntries = (
+    schema: Schema,
+    options: CommonViewOptions,
+    editorType: EditorType,
+    isSNotesStyle: boolean = true
+): MenuBlock[] => {
+    if (isSNotesStyle) {
+        return createMenuEntriesForSnotes(schema, options);
+    } else {
+        return createMenuEntriesForStacksEditor(schema, options, editorType);
+    }
+}
