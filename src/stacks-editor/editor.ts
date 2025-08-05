@@ -83,9 +83,6 @@ export class StacksEditor implements View {
         );
 
         this.setBackingView(this.options.defaultView, content);
-
-        // append the plugin container at bottom of the editor
-        this.innerTarget.appendChild(this.pluginContainer);
     }
 
     get editorView(): EditorView {
@@ -146,7 +143,7 @@ export class StacksEditor implements View {
                 "h100",
                 "p0",
                 "d-flex",
-                "fd-column",
+                "fd-column-reverse",
             ],
             elementAttributes: {},
             parserFeatures: RichTextEditor.defaultOptions.parserFeatures,
@@ -252,6 +249,8 @@ export class StacksEditor implements View {
         const pluginContainerFn = () => pluginTarget;
         this.options.pluginParentContainer = pluginContainerFn;
 
+        this.innerTarget.appendChild(this.pluginContainer);
+        
         // snotes: remove the editor switcher
         // this.createEditorSwitcher(this.options.defaultView, menuTarget);
 
