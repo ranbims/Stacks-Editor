@@ -220,11 +220,11 @@ export class StacksEditor implements View {
     private setupPluginContainer() {
         // create an area where plugins can be placed
         this.pluginContainer = document.createElement("div");
-        this.pluginContainer.className = `py6 bg-inherit btr-sm w100 ps-sticky t0 l0 z-nav s-editor-shadow js-plugin-container ${STICKY_OBSERVER_CLASS}`;
+        this.pluginContainer.className = `bg-inherit btr-sm w100 ps-sticky t0 l0 z-nav s-editor-shadow js-plugin-container ${STICKY_OBSERVER_CLASS}`;
 
         // create specific area for the editor menu
         const menuTarget = document.createElement("div");
-        menuTarget.className = "d-flex overflow-x-auto ai-center px12 py4 pb0";
+        menuTarget.className = "d-flex overflow-x-auto ai-center pb0";
         this.pluginContainer.appendChild(menuTarget);
 
         // set the editors' menu containers to be the combo container

@@ -301,7 +301,7 @@ class LinkTooltip {
         this.content.className = "w0";
         this.content.setAttribute("aria-controls", popoverId);
         this.content.setAttribute("data-controller", "s-popover");
-        this.content.setAttribute("data-s-popover-placement", "bottom");
+        this.content.setAttribute("data-s-popover-placement", "top");
 
         this.content.innerHTML = escapeHTML`<div class="s-popover is-visible p4 w-auto wmx-initial wmn-initial js-link-tooltip"
             id="${popoverId}"

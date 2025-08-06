@@ -358,7 +358,7 @@ export class MenuView implements PluginView {
         const wrapper = document.createElement("div");
         wrapper.dataset.controller = "s-popover";
         wrapper.setAttribute("data-s-popover-toggle-class", "is-selected");
-        wrapper.setAttribute("data-s-popover-placement", "bottom");
+        wrapper.setAttribute("data-s-popover-placement", "top");
         wrapper.setAttribute(
             "data-s-popover-reference-selector",
             `#${buttonId}`
