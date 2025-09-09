@@ -185,8 +185,6 @@ export class StacksEditor implements View {
             this.editorView.state,
             this.editorView.dispatch.bind(null) as (tr: Transaction) => void
         );
-        this.innerTarget.removeAttribute("readonly");
-        this.innerTarget.removeAttribute("aria-readonly");
     }
 
     /**
@@ -198,9 +196,6 @@ export class StacksEditor implements View {
             this.editorView.state,
             this.editorView.dispatch.bind(null) as (tr: Transaction) => void
         );
-
-        this.innerTarget.setAttribute("readonly", "");
-        this.innerTarget.setAttribute("aria-readonly", "true");
     }
 
     /**

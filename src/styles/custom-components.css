@@ -248,20 +248,3 @@
     /* so inherit the cursor from the editor */
     cursor: inherit;
 }
-
-/* overrides for only when the editor is readonly */
-
-/* dim the content on pre/code since their text color is unaffected */
-.ProseMirror[contenteditable="false"]:not(.s-markdown-preview) code,
-.ProseMirror[contenteditable="false"]:not(.s-markdown-preview) pre {
-    opacity: 80%;
-}
-
-/* make sure widgets all conform as well */
-.ProseMirror[contenteditable="false"]:not(.s-markdown-preview)
-    .ProseMirror-widget,
-.ProseMirror[contenteditable="false"]:not(.s-markdown-preview)
-    .ProseMirror-widget
-    * {
-    background-color: inherit;
-}
