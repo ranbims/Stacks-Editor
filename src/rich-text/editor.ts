@@ -136,7 +136,7 @@ export class RichTextEditor extends BaseView {
                             this.options.parserFeatures.validateLink,
                             this.finalizedSchema
                         ),
-                        readonlyPlugin(),
+                        readonlyPlugin(this.options.onReadonlyChanged),
                         spoilerToggle,
                         tables,
                         richTextCodePasteHandler,

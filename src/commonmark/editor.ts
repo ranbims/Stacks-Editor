@@ -113,7 +113,7 @@ export class CommonmarkEditor extends BaseView {
                             this.options.parserFeatures.validateLink
                         ),
                         placeholderPlugin(this.options.placeholderText),
-                        readonlyPlugin(),
+                        readonlyPlugin(this.options.onReadonlyChanged),
                         tripleClickHandler,
                         textCopyHandlerPlugin,
                         ...pluginProvider.plugins.commonmark,

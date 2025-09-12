@@ -35,18 +35,28 @@ export function toggleReadonly(
 }
 
 // TODO document
-export function readonlyPlugin(): Plugin {
+export function readonlyPlugin(onReadonlyChanged?: (isReadonly: boolean) => void): Plugin {
     return new Plugin<boolean>({
         key: READ_ONLY_KEY,
         state: {
             init() {
-                return false;
+                const initialReadonlyState = false;
+                // Call the callback on initialization if provided
+                if (onReadonlyChanged) {
+                    onReadonlyChanged(initialReadonlyState);
+                }
+                return initialReadonlyState;
             },
             apply(tr, value) {
                 const meta = tr.getMeta(READ_ONLY_KEY) as boolean | undefined;
 
                 if (typeof meta === "undefined") {
                     return value;
+                }
+
+                // If the readonly state has changed, call the callback
+                if (onReadonlyChanged && meta !== value) {
+                    onReadonlyChanged(meta);
                 }
 
                 return meta;
