@@ -155,6 +155,7 @@ export class StacksEditor implements View {
                 "p0",
                 "d-flex",
                 "fd-column-reverse",
+                "nb",
             ],
             elementAttributes: {},
             parserFeatures: RichTextEditor.defaultOptions.parserFeatures,
