@@ -49,6 +49,8 @@ export interface CommonViewOptions {
     editorPlugins?: EditorPlugin[];
     /** The callback when the content changed. */
     onContentChanged?: (content: Node) => void;
+    /** The callback when the readonly state changes (for hiding/showing menu) */
+    onReadonlyChanged?: (isReadonly: boolean) => void;
 }
 
 /** Configuration options for parsing and rendering [tag:*] and [meta-tag:*] syntax */
