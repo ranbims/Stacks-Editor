@@ -128,7 +128,7 @@ export interface View {
 /** Abstract class that contains shared functionality for implementing View */
 export abstract class BaseView implements View {
     editorView: EditorView;
-    protected abstract options: CommonViewOptions
+    protected abstract options: CommonViewOptions;
 
     get document(): Node {
         return this.editorView.state.doc;
@@ -189,15 +189,20 @@ export abstract class BaseView implements View {
      * This function should only be called after the editorView has been created
      */
     protected initializeDispatchTransaction() {
-        this.editorView.props.dispatchTransaction = (transaction: Transaction) => {
+        this.editorView.props.dispatchTransaction = (
+            transaction: Transaction
+        ) => {
             const view = this.editorView;
             const oldState = view.state;
-            const newState = oldState.apply(transaction); 
+            const newState = oldState.apply(transaction);
             view.updateState(newState);
-            if (this.options.onContentChanged && newState.doc !== oldState.doc) {
+            if (
+                this.options.onContentChanged &&
+                newState.doc !== oldState.doc
+            ) {
                 this.options.onContentChanged(newState.doc);
             }
-        }
+        };
     }
 
     /**

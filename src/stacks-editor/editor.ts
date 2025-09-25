@@ -67,7 +67,7 @@ export class StacksEditor implements View {
     ) {
         // do a deep merge of the passed options with our default options
         this.options = deepMerge(StacksEditor.defaultOptions, options);
-        
+
         // Set up the readonly state change callback to handle menu visibility
         // If user provided their own callback, we'll chain ours with theirs
         const userCallback = this.options.onReadonlyChanged;
@@ -77,7 +77,7 @@ export class StacksEditor implements View {
             // Then handle menu visibility
             this.updateMenuVisibility(isReadonly);
         };
-        
+
         this.target = target;
 
         // naively generate a random internalId for this editor instance
@@ -194,7 +194,7 @@ export class StacksEditor implements View {
      */
     private updateMenuVisibility(isReadonly: boolean): void {
         if (this.pluginContainer) {
-            this.pluginContainer.style.display = isReadonly ? 'none' : '';
+            this.pluginContainer.style.display = isReadonly ? "none" : "";
         }
     }
 
@@ -267,7 +267,7 @@ export class StacksEditor implements View {
         this.options.pluginParentContainer = pluginContainerFn;
 
         this.innerTarget.appendChild(this.pluginContainer);
-        
+
         // snotes: remove the editor switcher
         // this.createEditorSwitcher(this.options.defaultView, menuTarget);
 

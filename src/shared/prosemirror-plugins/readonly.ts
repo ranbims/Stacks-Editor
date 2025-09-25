@@ -35,7 +35,9 @@ export function toggleReadonly(
 }
 
 // TODO document
-export function readonlyPlugin(onReadonlyChanged?: (isReadonly: boolean) => void): Plugin {
+export function readonlyPlugin(
+    onReadonlyChanged?: (isReadonly: boolean) => void
+): Plugin {
     return new Plugin<boolean>({
         key: READ_ONLY_KEY,
         state: {

@@ -247,7 +247,10 @@ const moreFormattingDropdown = (schema: Schema, options: CommonViewOptions) =>
         )
     );
 
-const moreFormattingDropdownForSNotes = (schema: Schema, options: CommonViewOptions) =>
+const moreFormattingDropdownForSNotes = (
+    schema: Schema,
+    options: CommonViewOptions
+) =>
     makeMenuDropdown(
         "EllipsisHorizontal",
         _t("commands.moreFormatting"),
@@ -299,7 +302,9 @@ const moreFormattingDropdownForSNotes = (schema: Schema, options: CommonViewOpti
             "kbd-btn"
         ),
         makeDropdownItem(
-            _t("commands.inline_code.title", { shortcut: getShortcut("Mod-K") }),
+            _t("commands.inline_code.title", {
+                shortcut: getShortcut("Mod-K"),
+            }),
             {
                 richText: {
                     command: toggleMark(schema.marks.code),
@@ -344,7 +349,7 @@ const moreFormattingDropdownForSNotes = (schema: Schema, options: CommonViewOpti
 
 export const createMenuEntriesForSnotes = (
     schema: Schema,
-    options: CommonViewOptions,
+    options: CommonViewOptions
 ): MenuBlock[] => [
     {
         name: "snotes",
@@ -441,9 +446,9 @@ export const createMenuEntriesForSnotes = (
                 ),
             },
             moreFormattingDropdownForSNotes(schema, options),
-        ]
-    }
-]
+        ],
+    },
+];
 
 /**
  * Creates all menu entries for both the rich-text and commonmark editors
@@ -747,4 +752,4 @@ export const createMenuEntries = (
     } else {
         return createMenuEntriesForStacksEditor(schema, options, editorType);
     }
-}
+};
