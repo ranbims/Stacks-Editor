@@ -5,7 +5,7 @@
         "strictBindCallApply": true,
         "target": "esnext",
         "strict": false,
-        "noImplicitAny": false,
+        "noImplicitAny": false
     },
     "include": ["src/**/*"]
 }
