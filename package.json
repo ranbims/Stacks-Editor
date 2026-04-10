@@ -17,7 +17,7 @@
         "build": "npm run build:snotes",
         "build:prod": "webpack --config config/webpack.prod.js",
         "build:dev": "webpack --config config/webpack.dev.js",
-        "build:snotes": "webpack --config config/webpack.snotes.dev.js",
+        "build:snotes": "tsc --emitDeclarationOnly && webpack --config config/webpack.snotes.dev.js",
         "build:gh-pages": "webpack --config config/webpack.dev.js --mode=production --",
         "build:stats": "webpack --config config/webpack.prod.js --entry ./src/index.ts --profile --json > stats.json",
         "lint": "prettier --check . && eslint .",
