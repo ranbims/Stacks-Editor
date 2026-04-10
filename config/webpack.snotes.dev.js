@@ -9,6 +9,7 @@ module.exports = (env, argv) =>
             styles: "./src/styles/index.css",
         },
         mode: "development",
+        watch: true,
         // don't bundle highlight.js or its languages; we expect consumers to supply these themselves
         externals: function ({ request }, callback) {
             if (/^highlight.js/.test(request)) {
