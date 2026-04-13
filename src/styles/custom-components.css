@@ -141,12 +141,18 @@
 
 .ProseMirror {
     /* allow the editable area to fill the parent */
-    min-height: inherit;
+    min-height: 0;
+    /* keep editor content scrollable so the toolbar stays fixed at the bottom */
+    overflow-y: auto;
     /* required for proper rendering */
     word-wrap: break-word;
     font-variant-ligatures: none;
     white-space: pre-wrap;
     white-space: break-spaces;
+}
+
+.js-plugin-container {
+    flex-shrink: 0;
 }
 
 .ProseMirror [data-placeholder] {
