@@ -884,7 +884,7 @@ export function richTextImageUpload(
         uploadOptions,
         validateLink,
         (state, url, pos) => {
-            const defaultAltText = _t("image_upload.default_image_alt_text");
+            const defaultAltText = "";
 
             const marks =
                 uploadOptions.wrapImagesInLinks ||
@@ -926,7 +926,7 @@ export function commonmarkImageUpload(
         uploadOptions,
         validateLink,
         (state, url, pos) => {
-            const defaultAltText = _t("image_upload.default_image_alt_text");
+            const defaultAltText = "";
             // construct the raw markdown
             let mdString = `![${defaultAltText}](${url})`;
             let selectionStart = pos + 2;

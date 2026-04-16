@@ -7,7 +7,6 @@ import { log } from "../shared/logger";
 import { createMenuPlugin } from "../shared/menu/plugin";
 import { createPreviewPlugin } from "./plugins/preview";
 import {
-    commonmarkImageUpload,
     defaultImageUploadHandler,
 } from "../shared/prosemirror-plugins/image-upload";
 import { interfaceManagerPlugin } from "../shared/prosemirror-plugins/interface-manager";
@@ -107,10 +106,6 @@ export class CommonmarkEditor extends BaseView {
                         markdownHighlightPlugin(this.options.parserFeatures),
                         interfaceManagerPlugin(
                             this.options.pluginParentContainer
-                        ),
-                        commonmarkImageUpload(
-                            this.options.imageUpload,
-                            this.options.parserFeatures.validateLink
                         ),
                         placeholderPlugin(this.options.placeholderText),
                         readonlyPlugin(this.options.onReadonlyChanged),
