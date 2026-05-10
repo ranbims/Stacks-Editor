@@ -157,10 +157,8 @@ export class RichTextEditor extends BaseView {
                     },
                     image(
                         node: ProseMirrorNode,
-                        view: EditorView,
-                        getPos: () => number
                     ) {
-                        return new ImageView(node, view, getPos);
+                        return new ImageView(node);
                     },
                     tagLink(node: ProseMirrorNode) {
                         return new TagLink(node, tagLinkOptions);
