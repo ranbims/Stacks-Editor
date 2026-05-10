@@ -1,5 +1,6 @@
 import { Node as ProsemirrorNode } from "prosemirror-model";
 import { NodeView } from "prosemirror-view";
+import { dispatchEditorEvent } from "../../shared/utils";
 
 //NOTE relies on Stacks classes. Should we separate out so the view is more agnostic?
 
@@ -15,6 +16,14 @@ export class ImageView implements NodeView {
 
         this.dom = document.createElement("span");
         this.dom.appendChild(this.img);
+
+        this.img.addEventListener("dblclick", (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            dispatchEditorEvent(this.img, "image-open", {
+                src: this.img.src,
+            });
+        });
     }
 
     selectNode(): void {
