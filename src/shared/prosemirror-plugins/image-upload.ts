@@ -92,6 +92,9 @@ export async function defaultImageUploadHandler(file: File): Promise<string> {
 
 const defaultAcceptedFileTypes = ["image/jpeg", "image/png", "image/gif"];
 
+/** Module-level reference to the active ImageUploader instance */
+let _uploaderInstance: ImageUploader | null = null;
+
 enum ValidationResult {
     Ok,
     FileTooLarge,
@@ -674,17 +677,56 @@ export function hideImageUploader(view: EditorView): void {
     }
 }
 
-/** Shows the image uploader
+/** Shows the image uploader panel or inserts an image directly.
  * @param view The current editor view
  * @param file The file to upload
+ * @param showPanel If true, shows the uploader panel. If false (default), bypasses the panel
+ *   and either uploads the file directly or opens a native file picker.
  */
-export function showImageUploader(view: EditorView, file?: File): void {
-    const tr = INTERFACE_KEY.showInterfaceTr(view.state, {
-        file: file || null,
-    });
+export function showImageUploader(
+    view: EditorView,
+    file?: File,
+    showPanel = false
+): void {
+    if (showPanel) {
+        const tr = INTERFACE_KEY.showInterfaceTr(view.state, {
+            file: file || null,
+        });
 
-    if (tr) {
-        view.dispatch(tr);
+        if (tr) {
+            view.dispatch(tr);
+        }
+    } else {
+        if (!_uploaderInstance) return;
+
+        if (file) {
+            void _uploaderInstance.startImageUpload(view, file);
+        } else {
+            const acceptedFileTypes =
+                _uploaderInstance.uploadOptions?.acceptedFileTypes ||
+                defaultAcceptedFileTypes;
+            const input = document.createElement("input");
+            input.type = "file";
+            input.accept = acceptedFileTypes.join(", ");
+            input.multiple = false;
+            input.style.display = "none";
+            input.addEventListener("change", () => {
+                const selectedFile = input.files?.[0];
+                if (selectedFile && _uploaderInstance) {
+                    const validation =
+                        _uploaderInstance.validateImage(selectedFile);
+                    if (validation === ValidationResult.Ok) {
+                        void _uploaderInstance.startImageUpload(
+                            view,
+                            selectedFile
+                        );
+                    }
+                }
+                input.remove();
+            });
+            document.body.appendChild(input);
+            input.click();
+        }
     }
 }
 
@@ -848,12 +890,13 @@ function imageUploaderPlaceholderPlugin(
             },
         },
         view(editorView): PluginView {
-            return new ImageUploader(
+            _uploaderInstance = new ImageUploader(
                 editorView,
                 uploadOptions,
                 validateLink,
                 addTransactionDispatcher
             );
+            return _uploaderInstance;
         },
     });
 }
