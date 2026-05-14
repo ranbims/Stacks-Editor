@@ -354,14 +354,9 @@ export class ImageUploader extends PluginInterfaceView<
     validateImage(image: File): ValidationResult {
         const validTypes =
             this.uploadOptions.acceptedFileTypes ?? defaultAcceptedFileTypes;
-        const sizeLimit = 0x200000; // 2 MiB
 
         if (validTypes.indexOf(image.type) === -1) {
             return ValidationResult.InvalidFileType;
-        }
-
-        if (image.size >= sizeLimit) {
-            return ValidationResult.FileTooLarge;
         }
 
         return ValidationResult.Ok;
@@ -862,14 +857,49 @@ function imageUploaderPlaceholderPlugin(
             decorations(state) {
                 return this.getState(state).decorations;
             },
+            handleDOMEvents: {
+                dragover(view: EditorView, event: DragEvent) {
+                    // Prevent default to signal the browser we accept file drops
+                    if (
+                        event.dataTransfer?.types?.includes("Files")
+                    ) {
+                        event.preventDefault();
+                    }
+                    return false;
+                },
+            },
             handleDrop(view: EditorView, event: DragEvent) {
                 const files = event.dataTransfer.files;
+                const imageFile = files.length
+                    ? Array.from(files).find((f) => f.type.startsWith("image/"))
+                    : undefined;
+
+                if (!imageFile) {
+                    return false;
+                }
+
+                // Resolve drop position from mouse coordinates
+                const dropPos = view.posAtCoords({
+                    left: event.clientX,
+                    top: event.clientY,
+                });
 
                 if (
-                    view.state.selection.$from.parent.inlineContent &&
-                    files.length
+                    dropPos &&
+                    view.state.doc
+                        .resolve(dropPos.pos)
+                        .parent.inlineContent
                 ) {
-                    showImageUploader(view, files[0]);
+                    // Move cursor to drop position before uploading
+                    const tr = view.state.tr.setSelection(
+                        TextSelection.create(
+                            view.state.doc,
+                            dropPos.pos
+                        )
+                    );
+                    view.dispatch(tr);
+                    showImageUploader(view, imageFile);
+                    event.preventDefault();
                     return true;
                 }
 
