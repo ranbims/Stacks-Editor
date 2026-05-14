@@ -878,6 +878,9 @@ function imageUploaderPlaceholderPlugin(
                     return false;
                 }
 
+                // Always prevent default for image drops to avoid the browser trying to handle the drop on its own (e.g. by navigating to the image)
+                event.preventDefault();
+
                 // Resolve drop position from mouse coordinates
                 const dropPos = view.posAtCoords({
                     left: event.clientX,
@@ -898,12 +901,10 @@ function imageUploaderPlaceholderPlugin(
                         )
                     );
                     view.dispatch(tr);
-                    showImageUploader(view, imageFile);
-                    event.preventDefault();
-                    return true;
                 }
 
-                return false;
+                showImageUploader(view, imageFile);
+                return true;
             },
             handlePaste(view: EditorView, event: ClipboardEvent) {
                 const files = event.clipboardData.files;
