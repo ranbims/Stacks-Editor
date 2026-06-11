@@ -24,6 +24,11 @@ function getHtmlClipboardContent(clipboardData: DataTransfer) {
     );
 }
 
+interface DetectedCode {
+    text: string;
+    language?: string;
+}
+
 /**
  * Detects if code was pasted into the document and returns the text if true
  * @param clipboardData The clipboardData from the ClipboardEvent
@@ -31,13 +36,15 @@ function getHtmlClipboardContent(clipboardData: DataTransfer) {
 function getDetectedCode(
     clipboardData: DataTransfer,
     htmlDoc: Document
-): string | null {
+): DetectedCode | null {
     // if we're loading a whole document, don't false positive if there's more than just code
     const codeEl = htmlDoc?.querySelector("code");
     if (htmlDoc && codeEl) {
-        return htmlDoc.body.textContent.trim() !== codeEl.textContent
-            ? null
-            : codeEl.textContent;
+        const text =
+            htmlDoc.body.textContent.trim() !== codeEl.textContent
+                ? null
+                : codeEl.textContent;
+        return text ? { text } : null;
     }
 
     const textContent = clipboardData.getData("text/plain");
@@ -46,19 +53,19 @@ function getDetectedCode(
         return null;
     }
 
-    // TODO how to reliably detect if a string is code?
-
-    // TODO add more support?
     // check if there's ide specific paste data present
-    if (clipboardData.getData("vscode-editor-data")) {
-        // TODO parse data for language?
-        return textContent;
-    }
-
-    // no ide detected, try detecting leading indentation
-    // true if any line starts with: 2+ space characters, 1 tab character
-    if (/^([ ]{2,}|\t)/m.test(textContent)) {
-        return textContent;
+    const vscodeData = clipboardData.getData("vscode-editor-data");
+    if (vscodeData) {
+        let language: string | undefined;
+        try {
+            const parsed = JSON.parse(vscodeData);
+            if (parsed.mode && parsed.mode !== "plaintext") {
+                language = parsed.mode;
+            }
+        } catch {
+            // ignore malformed metadata
+        }
+        return { text: textContent, language };
     }
 
     return null;
@@ -73,9 +80,7 @@ function getDetectedCode(
 export function parseCodeFromPasteData(
     clipboardData: DataTransfer,
     doc?: Slice | Node
-) {
-    let codeData: string;
-
+): DetectedCode | null {
     let htmlContent: Document | null = null;
     if (!doc) {
         htmlContent = getHtmlClipboardContent(clipboardData);
@@ -91,20 +96,16 @@ export function parseCodeFromPasteData(
         doc.content.childCount === 1 &&
         doc.content.child(0).type.name === "code_block"
     ) {
-        codeData = doc.content.child(0).textContent;
-    } else {
-        // if not parsed above, parse here - this allows us to only run the parse when it is necessary
-        htmlContent ??= getHtmlClipboardContent(clipboardData);
-        codeData = getDetectedCode(clipboardData, htmlContent);
+        const codeNode = doc.content.child(0);
+        return {
+            text: codeNode.textContent,
+            language: codeNode.attrs.params || undefined,
+        };
     }
 
-    if (!codeData) {
-        return null;
-    }
-
-    // TODO can we do some basic formatting?
-
-    return codeData;
+    // if not parsed above, parse here - this allows us to only run the parse when it is necessary
+    htmlContent ??= getHtmlClipboardContent(clipboardData);
+    return getDetectedCode(clipboardData, htmlContent);
 }
 
 /** Plugin for the rich-text editor that auto-detects if code was pasted and handles it specifically */
@@ -125,7 +126,13 @@ export const richTextCodePasteHandler = new Plugin({
                 return false;
             }
 
-            const node = codeblockType.createChecked({}, schema.text(codeData));
+            const attrs = codeData.language
+                ? { params: codeData.language }
+                : {};
+            const node = codeblockType.createChecked(
+                attrs,
+                schema.text(codeData.text)
+            );
             view.dispatch(view.state.tr.replaceSelectionWith(node));
 
             return true;
