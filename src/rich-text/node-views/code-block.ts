@@ -14,8 +14,6 @@ export class CodeBlockView implements NodeView {
     dom: HTMLElement | null;
     contentDOM?: HTMLElement | null;
 
-    private language: string = null;
-
     constructor(
         node: ProsemirrorNode,
         view: EditorView,
@@ -45,7 +43,7 @@ export class CodeBlockView implements NodeView {
         if (processorApplies) {
             this.updateProcessor(node, processorApplies);
         } else {
-            this.updateCodeBlock(rawLanguage);
+            this.updateCodeBlock();
         }
 
         this.toggleView(!!processorApplies, !!node.attrs.isEditingProcessor);
@@ -57,7 +55,6 @@ export class CodeBlockView implements NodeView {
         const randomId = generateRandomId();
 
         this.dom.innerHTML = escapeHTML`
-        <div class="ps-absolute t2 r4 fs-fine pe-none us-none fc-black-350 js-language-indicator" contenteditable=false></div>
         <div class="d-flex ps-absolute t0 r0 js-processor-toggle">
             <label class="flex--item mr4" for="js-editor-toggle-${randomId}">
                 Edit
@@ -100,7 +97,6 @@ export class CodeBlockView implements NodeView {
 
         toggle(".js-code-view", !showProcessor || showProcessorEdit);
         toggle(".js-processor-toggle", showProcessor);
-        toggle(".js-language-indicator", !showProcessor);
         toggle(".js-processor-view", showProcessor && !showProcessorEdit);
     }
 
@@ -119,12 +115,8 @@ export class CodeBlockView implements NodeView {
     }
 
     /** Updates the edit/code view */
-    private updateCodeBlock(rawLanguage: string) {
-        if (this.language !== rawLanguage) {
-            this.dom.querySelector(".js-language-indicator").textContent =
-                rawLanguage;
-            this.language = rawLanguage;
-        }
+    private updateCodeBlock() {
+        // language display removed - no visual indicator needed
     }
 
     /** Updates the processor view */
