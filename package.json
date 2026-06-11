@@ -8,7 +8,7 @@
     },
     "main": "./dist/app.bundle.js",
     "module": "./dist/index.js",
-    "types": "./dist/index.d.ts",
+    "types": "./dist/types/index.d.ts",
     "files": [
         "dist/"
     ],
@@ -17,7 +17,7 @@
         "build": "npm run build:snotes:prod",
         "build:prod": "webpack --config config/webpack.prod.js",
         "build:dev": "webpack --config config/webpack.dev.js",
-        "build:snotes": "tsc --emitDeclarationOnly && webpack --config config/webpack.snotes.dev.js",
+        "build:snotes": "concurrently \"tsc --emitDeclarationOnly --watch --preserveWatchOutput\" \"webpack --config config/webpack.snotes.dev.js\"",
         "build:snotes:prod": "tsc --emitDeclarationOnly && webpack --config config/webpack.prod.js",
         "build:gh-pages": "webpack --config config/webpack.dev.js --mode=production --",
         "build:stats": "webpack --config config/webpack.prod.js --entry ./src/index.ts --profile --json > stats.json",
