@@ -135,7 +135,6 @@ export class StacksEditor implements View {
             "fl-grow1",
             "outline-none",
             "p12",
-            "pt6",
             "w100",
             "s-prose",
             // in case this needs to be reference by outside code or e2e tests
