@@ -55,7 +55,7 @@ export class MenuView implements PluginView {
 
         this.dom = document.createElement("div");
         this.dom.className =
-            "d-flex g16 fl-grow1 ai-center js-editor-menu overflow-x-auto";
+            "d-flex g16 fl-grow1 ai-center js-editor-menu overflow-visible";
 
         // sort the blocks by their priority; lower priority first
         this.blocks = blocks

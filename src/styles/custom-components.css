@@ -125,6 +125,10 @@
     opacity: 0.5;
 }
 
+.js-block-snotes .s-popover .s-popover--arrow {
+    display: none;
+}
+
 .s-editor-resizable {
     max-height: calc(var(--s-step) * 6);
     resize: vertical;

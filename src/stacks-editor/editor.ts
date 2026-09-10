@@ -240,7 +240,7 @@ export class StacksEditor implements View {
 
         // create specific area for the editor menu
         const menuTarget = document.createElement("div");
-        menuTarget.className = "d-flex overflow-x-auto ai-center pb0";
+        menuTarget.className = "d-flex overflow-visible ai-center pb0";
         this.pluginContainer.appendChild(menuTarget);
 
         // set the editors' menu containers to be the combo container
@@ -319,24 +319,6 @@ export class StacksEditor implements View {
         } else {
             throw `Unable to set editor to unknown type: ${EditorType[type]}`;
         }
-
-        // set up focus/blur listeners so we can style the dom to match
-        this.backingView.editorView.props.handleDOMEvents = {
-            focus: () => {
-                this.innerTarget.classList.add(
-                    "bs-ring",
-                    "bc-theme-secondary-400"
-                );
-                return false;
-            },
-            blur: () => {
-                this.innerTarget.classList.remove(
-                    "bs-ring",
-                    "bc-theme-secondary-400"
-                );
-                return false;
-            },
-        };
 
         // re-sync the view readonly state / classes
         if (readonly) {
