@@ -143,11 +143,21 @@
 
 /* EDITOR ONLY STYLE OVERRIDES */
 
+.s-editor-content-viewport {
+    flex: 1 1 0;
+    min-height: 0;
+    min-width: 0;
+    overflow-x: hidden;
+    overflow-y: auto;
+}
+
+.s-editor-content-viewport > .ProseMirror {
+    min-height: 100%;
+}
+
 .ProseMirror {
     /* allow the editable area to fill the parent */
     min-height: 0;
-    /* keep editor content scrollable so the toolbar stays fixed at the bottom */
-    overflow-y: auto;
     /* required for proper rendering */
     word-wrap: break-word;
     font-variant-ligatures: none;

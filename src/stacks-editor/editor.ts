@@ -49,6 +49,8 @@ export class StacksEditor implements View {
     private target: HTMLElement;
     /** The element to render the backing view into */
     private innerTarget: HTMLElement;
+    /** The scrollable element that contains the backing view */
+    private contentTarget: HTMLElement;
     /** The element to render the menu into */
     private pluginContainer: HTMLElement;
     /** The current backing view instance */
@@ -87,6 +89,10 @@ export class StacksEditor implements View {
         this.target.appendChild(this.innerTarget);
 
         this.setupPluginContainer();
+
+        this.contentTarget = document.createElement("div");
+        this.contentTarget.className = "s-editor-content-viewport";
+        this.innerTarget.appendChild(this.contentTarget);
 
         this.pluginProvider = new ExternalPluginProvider(
             this.options.editorPlugins,
@@ -304,14 +310,14 @@ export class StacksEditor implements View {
 
         if (type === EditorType.RichText) {
             this.backingView = new RichTextEditor(
-                this.innerTarget,
+                this.contentTarget,
                 content,
                 this.pluginProvider,
                 deepMerge(this.options, this.options.richTextOptions)
             );
         } else if (type === EditorType.Commonmark) {
             this.backingView = new CommonmarkEditor(
-                this.innerTarget,
+                this.contentTarget,
                 content,
                 this.pluginProvider,
                 deepMerge(this.options, this.options.commonmarkOptions)
