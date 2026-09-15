@@ -209,7 +209,11 @@ const nodes: {
             },
         ],
         toDOM(node) {
-            return ["img", node.attrs];
+            return ["img", {
+                ...node.attrs,
+                loading: "lazy",
+                decoding: "async",
+            }];
         },
     },
 

@@ -102,6 +102,28 @@ describe("image upload plugin", () => {
             expect(uploader.uploadContainer.parentElement).toBeNull();
         });
 
+        it.each([
+            [
+                new Error("Image exceeds the pixel limit"),
+                "Image exceeds the pixel limit",
+            ],
+            ["upload failed", "Image upload failed. Please try again."],
+        ])(
+            "should show the appropriate upload handler error",
+            async (reason, expectedMessage) => {
+                setupTestVariables({ handler: () => Promise.reject(reason) });
+
+                await uploader.startImageUpload(
+                    view.editorView,
+                    mockFile("some image", "image/png")
+                );
+
+                expect(findValidationMessage(uploader).textContent).toBe(
+                    expectedMessage
+                );
+            }
+        );
+
         it("should disable 'add image' button without preview", () => {
             showImageUploader(view.editorView);
 

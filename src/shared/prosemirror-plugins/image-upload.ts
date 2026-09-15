@@ -317,12 +317,9 @@ export class ImageUploader extends PluginInterfaceView<
     getCaptionElement(text: string): HTMLElement {
         const uploadCaptionEl = document.createElement("span");
         uploadCaptionEl.className = "fc-light fs-caption";
-
-        let captionText = "(Max size 2 MiB)";
-        if (text) {
-            captionText = `Supported file types: ${text} ${captionText}`;
-        }
-        uploadCaptionEl.innerText = captionText;
+        uploadCaptionEl.innerText = text
+            ? `Supported file types: ${text}`
+            : "";
 
         return uploadCaptionEl;
     }
@@ -613,13 +610,15 @@ export class ImageUploader extends PluginInterfaceView<
                 const tr = this.addTransactionDispatcher(view.state, url, pos);
                 this.removeImagePlaceholder(view, id, tr);
             },
-            () => {
+            (reason: unknown) => {
                 // ON ERROR
                 // reshow the image uploader along with an error message
                 const tr = this.tryShowInterfaceTr(view.state) || view.state.tr;
                 this.removeImagePlaceholder(view, id, tr);
                 this.showValidationError(
-                    _t("image_upload.upload_error_generic"),
+                    reason instanceof Error
+                        ? reason.message
+                        : _t("image_upload.upload_error_generic"),
                     "error"
                 );
             }

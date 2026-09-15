@@ -83,7 +83,7 @@ export const defaultStrings = {
         default_image_alt_text: "enter image description here" as string,
         external_url_validation_error: "The entered URL is invalid." as string,
         upload_error_file_too_big:
-            "Your image is too large to upload (over 2 MiB)" as string,
+            "Your image is too large to upload (over 33.2 megapixels)" as string,
         upload_error_generic:
             "Image upload failed. Please try again." as string,
         upload_error_unsupported_format: ({
