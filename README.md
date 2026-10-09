@@ -60,6 +60,13 @@ new StacksEditor(
 
 ---
 
+### Inserting Links in Markdown Mode
+
+The link menu command and `Ctrl+L` (`Cmd+L` on macOS) insert `[text]()` with the
+cursor inside the empty parentheses, ready for a URL. If text is selected, it
+becomes the link label instead. The current page's origin is never inserted as
+the destination.
+
 ## Development
 
 1. Install dependencies with `npm i`

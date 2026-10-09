@@ -585,7 +585,7 @@ function insertRawText(
 }
 
 /**
- * Inserts a link at the cursor, optionally placing it around the currently selected text if able
+ * Inserts a link around selected text or a placeholder, with the cursor in an empty destination
  * @param state The current editor state
  * @param dispatch the dispatch function used to dispatch the transaction, set to "null" if you don't want to dispatch
  */
@@ -593,29 +593,14 @@ export function insertCommonmarkLinkCommand(
     state: EditorState,
     dispatch: (tr: Transaction) => void
 ): boolean {
-    // attempt to use the current origin, falling back to "url" otherwise
-    const dummyLink = globalThis.location.origin ?? "url";
-
-    // insert a new link with the text selected
-    if (state.selection.empty) {
-        return insertRawText(
-            "[text](" + dummyLink + ")",
-            7, // length of "[text](" before the dummyLink
-            7 + dummyLink.length,
-            state,
-            dispatch
-        );
-    }
-
     const { from, to } = state.selection;
-    const selectedText = state.doc.textBetween(from, to);
+    const linkText = state.selection.empty
+        ? "text"
+        : state.doc.textBetween(from, to);
+    const insertedText = `[${linkText}]()`;
+    const cursor = 3 + linkText.length;
 
-    const insertedText = `[${selectedText}](${dummyLink})`;
-    const selectFrom = 3 + selectedText.length;
-    const selectTo = selectFrom + dummyLink.length;
-
-    // insert the link with the link selected for easy typeover
-    return insertRawText(insertedText, selectFrom, selectTo, state, dispatch);
+    return insertRawText(insertedText, cursor, cursor, state, dispatch);
 }
 
 /**

@@ -771,8 +771,8 @@ some text`;
 
             expect(state).transactionSuccess(
                 commands.insertCommonmarkLinkCommand,
-                "[text](http://localhost)",
-                "http://localhost"
+                "[text]()",
+                ""
             );
         });
 
@@ -781,9 +781,39 @@ some text`;
 
             expect(state).transactionSuccess(
                 commands.insertCommonmarkLinkCommand,
-                "[existing](http://localhost)",
-                "http://localhost"
+                "[existing]()",
+                ""
             );
         });
+
+        it.each([
+            ["", 0, 0, "[text]()", 8],
+            ["existing", 0, 8, "[existing]()", 12],
+            ["before after", 7, 7, "before [text]()after", 15],
+            ["before label after", 7, 12, "before [label]() after", 16],
+        ])(
+            "should place the cursor in the empty destination for typing (%#)",
+            (content, from, to, expected, cursor) => {
+                let state = createState(content, from, to);
+                const isValid = commands.insertCommonmarkLinkCommand(
+                    state,
+                    (tr) => {
+                        state = state.apply(tr);
+                    }
+                );
+
+                expect(isValid).toBe(true);
+                expect(state.doc.textContent).toBe(expected);
+                expect(state.selection.from).toBe(cursor);
+                expect(state.selection.to).toBe(cursor);
+
+                state = state.apply(
+                    state.tr.insertText("https://example.com")
+                );
+                expect(state.doc.textContent).toBe(
+                    expected.replace("()", "(https://example.com)")
+                );
+            }
+        );
     });
 });
