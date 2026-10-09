@@ -47,6 +47,8 @@ import { createMenuPlugin } from "../shared/menu/plugin";
 export interface RichTextOptions extends CommonViewOptions {
     /** Array of LinkPreviewProviders to handle specific link preview urls */
     linkPreviewProviders?: LinkPreviewProvider[];
+    /** Display link editing above the canvas instead of in the plugin area. */
+    linkEditorDisplay?: "inline" | "dialog";
     codeblockOverrideLanguage?: string;
 }
 
@@ -129,7 +131,10 @@ export class RichTextEditor extends BaseView {
                         interfaceManagerPlugin(
                             this.options.pluginParentContainer
                         ),
-                        linkEditorPlugin(this.options.parserFeatures),
+                        linkEditorPlugin(
+                            this.options.parserFeatures,
+                            this.options.linkEditorDisplay
+                        ),
                         placeholderPlugin(this.options.placeholderText),
                         richTextImageUpload(
                             this.options.imageUpload,

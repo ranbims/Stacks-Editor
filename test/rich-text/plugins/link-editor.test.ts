@@ -431,6 +431,190 @@ describe("link-editor", () => {
         });
     });
 
+    describe("dialog presentation", () => {
+        let target: HTMLDivElement;
+        let view: RichTextEditor;
+        const dialogPrototype = HTMLDialogElement.prototype;
+        const originalShowModal = Object.getOwnPropertyDescriptor(
+            dialogPrototype,
+            "showModal"
+        );
+        const originalClose = Object.getOwnPropertyDescriptor(
+            dialogPrototype,
+            "close"
+        );
+
+        beforeEach(() => {
+            // JSDOM does not implement the native dialog's top-layer behavior.
+            Object.defineProperties(dialogPrototype, {
+                showModal: {
+                    configurable: true,
+                    value: function (this: HTMLDialogElement) {
+                        this.open = true;
+                    },
+                },
+                close: {
+                    configurable: true,
+                    value: function (this: HTMLDialogElement) {
+                        this.open = false;
+                    },
+                },
+            });
+            target = document.createElement("div");
+            document.body.appendChild(target);
+            view = new RichTextEditor(
+                target,
+                "before selected after",
+                externalPluginProvider(),
+                { linkEditorDisplay: "dialog" }
+            );
+            view.editorView.updateState(
+                applySelection(view.editorView.state, 7, 15)
+            );
+        });
+
+        afterEach(() => {
+            view.destroy();
+            target.remove();
+            for (const [name, descriptor] of [
+                ["showModal", originalShowModal],
+                ["close", originalClose],
+            ] as const) {
+                if (descriptor) {
+                    Object.defineProperty(dialogPrototype, name, descriptor);
+                } else {
+                    Reflect.deleteProperty(dialogPrototype, name);
+                }
+            }
+        });
+
+        function openDialog(url = "") {
+            showLinkEditor(view.editorView, url, "selected");
+            return target.querySelector<HTMLDialogElement>(
+                ".js-link-editor-dialog"
+            );
+        }
+
+        it("opens a labelled dialog and focuses the URL without losing selection", () => {
+            const selection = view.editorView.state.selection;
+            const dialog = openDialog();
+            expect(dialog.open).toBe(true);
+            expect(dialog.getAttribute("aria-label")).toBe("Link");
+            expect(document.activeElement).toBe(
+                dialog.querySelector(".js-link-editor-href")
+            );
+            expect(view.editorView.state.selection.eq(selection)).toBe(true);
+            const text = dialog.querySelector<HTMLInputElement>(
+                ".js-link-editor-text"
+            );
+            expect(text.labels[0].htmlFor).toBe(text.id);
+        });
+
+        it("does not reset draft fields or focus during editor transactions", () => {
+            view.content = "before [selected](https://example.com) after";
+            view.editorView.updateState(
+                applySelection(view.editorView.state, 9)
+            );
+            getRenderedDecoration(view.editorView)
+                .querySelector(".js-link-tooltip-edit")
+                .dispatchEvent(new Event("mousedown"));
+            const dialog = target.querySelector<HTMLDialogElement>(
+                ".js-link-editor-dialog"
+            );
+            expect(dialog.open).toBe(true);
+            expect(formValue(dialog.querySelector("form"), "href")).toBe(
+                "https://example.com"
+            );
+            const text = dialog.querySelector<HTMLInputElement>(
+                ".js-link-editor-text"
+            );
+            expect(text.value).toBe("selected");
+            text.value = "draft";
+            text.focus();
+            view.editorView.dispatch(view.editorView.state.tr);
+            expect(text.value).toBe("draft");
+            expect(document.activeElement).toBe(text);
+            expect(target.querySelector(".js-link-tooltip")).toBeNull();
+        });
+
+        it("saves at the original selection and restores editor focus", () => {
+            const dialog = openDialog("https://example.com");
+            dialog.querySelector("form").dispatchEvent(
+                new Event("submit", { bubbles: true, cancelable: true })
+            );
+            expect(view.content.trim()).toBe(
+                "before [selected](https://example.com) after"
+            );
+            expect(dialog.open).toBe(false);
+            expect(dialog.isConnected).toBe(false);
+            expect(view.editorView.hasFocus()).toBe(true);
+        });
+
+        it.each(["reset", "cancel", "backdrop"])(
+            "dismisses via %s without modifying content",
+            (action) => {
+                const original = view.content;
+                const dialog = openDialog("https://example.com");
+                if (action === "reset") {
+                    dialog.querySelector("form").dispatchEvent(
+                        new Event("reset", { bubbles: true, cancelable: true })
+                    );
+                } else if (action === "cancel") {
+                    dialog.dispatchEvent(
+                        new Event("cancel", { cancelable: true })
+                    );
+                } else {
+                    dialog.dispatchEvent(new Event("pointerdown"));
+                    dialog.click();
+                }
+                expect(dialog.open).toBe(false);
+                expect(dialog.isConnected).toBe(false);
+                expect(view.content).toBe(original);
+                expect(view.editorView.hasFocus()).toBe(true);
+            }
+        );
+
+        it("ignores a backdrop click when the gesture started in the form", () => {
+            const dialog = openDialog();
+            dialog.querySelector("input").dispatchEvent(
+                new Event("pointerdown", { bubbles: true })
+            );
+            dialog.click();
+            expect(dialog.open).toBe(true);
+        });
+
+        it("keeps invalid URLs open and resets validation when reopened", () => {
+            const dialog = openDialog();
+            const href = dialog.querySelector<HTMLInputElement>(
+                ".js-link-editor-href"
+            );
+            const save = dialog.querySelector<HTMLButtonElement>(
+                ".js-link-editor-save-btn"
+            );
+            href.value = "javascript:alert(1)";
+            href.dispatchEvent(new Event("input"));
+            expect(save.disabled).toBe(true);
+            expect(href.getAttribute("aria-invalid")).toBe("true");
+            dialog.querySelector("form").dispatchEvent(
+                new Event("submit", { cancelable: true })
+            );
+            expect(dialog.open).toBe(true);
+            expect(view.content.trim()).toBe("before selected after");
+            hideLinkEditor(view.editorView);
+            openDialog();
+            expect(href.hasAttribute("aria-invalid")).toBe(false);
+            expect(href.value).toBe("");
+            expect(save.disabled).toBe(true);
+        });
+
+        it("closes and removes an open dialog when the editor is destroyed", () => {
+            const dialog = openDialog();
+            view.destroy();
+            expect(dialog.open).toBe(false);
+            expect(dialog.isConnected).toBe(false);
+        });
+    });
+
     describe("tooltip", () => {
         it("should not show with no cursor", () => {
             const state = createState(

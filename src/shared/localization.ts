@@ -60,6 +60,7 @@ export const defaultStrings = {
         unordered_list: shortcut("Bulleted list"),
     },
     link_editor: {
+        title: "Link",
         cancel_button: "Cancel",
         href_label: "Link URL",
         save_button: "Save",

@@ -30,6 +30,7 @@ export class LinkEditor extends PluginInterfaceView<
 > {
     private validateLink: CommonmarkParserFeatures["validateLink"];
     private viewContainer: Element;
+    private dialog: HTMLDialogElement;
 
     private get hrefInput(): HTMLInputElement {
         return this.viewContainer.querySelector<HTMLInputElement>(
@@ -55,7 +56,8 @@ export class LinkEditor extends PluginInterfaceView<
 
     constructor(
         view: EditorView,
-        validateLink: CommonmarkParserFeatures["validateLink"]
+        validateLink: CommonmarkParserFeatures["validateLink"],
+        display: "inline" | "dialog" = "inline"
     ) {
         super(LINK_EDITOR_KEY);
 
@@ -71,14 +73,14 @@ export class LinkEditor extends PluginInterfaceView<
                     "link_editor.href_label"
                 )}</label>
                 <input id="link-editor-href-input-${randomId}" class="s-input js-link-editor-href" type="text" name="href" aria-describedby="link-editor-href-error-${randomId}" />
-                <p id="link-editor-href-error-${randomId}" class="s-input-message mt4 d-none js-link-editor-href-error"></p>
+                <p id="link-editor-href-error-${randomId}" class="s-input-message mt4 d-none js-link-editor-href-error" role="alert"></p>
             </div>
 
             <div class="flex--item">
                 <label for="link-editor-text-input-${randomId}" class="s-label mb4">${_t(
                     "link_editor.text_label"
                 )}</label>
-                <input id="link-text-href-input-${randomId}" class="s-input js-link-editor-text" type="text" name="text" />
+                <input id="link-editor-text-input-${randomId}" class="s-input js-link-editor-text" type="text" name="text" />
             </div>
 
             <div class="flex--item">
@@ -91,6 +93,39 @@ export class LinkEditor extends PluginInterfaceView<
             </div>
         </div>`;
 
+        const cancel = () => {
+            const tr = this.tryHideInterfaceTr(view.state);
+            if (tr) {
+                view.dispatch(tr);
+                if (this.dialog) {
+                    view.focus();
+                }
+            }
+        };
+
+        if (display === "dialog") {
+            this.dialog = document.createElement("dialog");
+            this.dialog.className = "js-link-editor-dialog";
+            this.dialog.setAttribute("aria-label", _t("link_editor.title"));
+            this.dialog.appendChild(this.viewContainer);
+            this.dialog.addEventListener("cancel", (event) => {
+                event.preventDefault();
+                cancel();
+            });
+
+            // Require both ends of the gesture on the backdrop, not a drag from an input.
+            let backdropPressed = false;
+            this.dialog.addEventListener("pointerdown", (event) => {
+                backdropPressed = event.target === this.dialog;
+            });
+            this.dialog.addEventListener("click", (event) => {
+                if (backdropPressed && event.target === this.dialog) {
+                    cancel();
+                }
+                backdropPressed = false;
+            });
+        }
+
         this.viewContainer.addEventListener("submit", (e) => {
             e.preventDefault();
             e.stopPropagation();
@@ -100,10 +135,7 @@ export class LinkEditor extends PluginInterfaceView<
         this.viewContainer.addEventListener("reset", (e) => {
             e.preventDefault();
             e.stopPropagation();
-            const tr = this.tryHideInterfaceTr(view.state);
-            if (tr) {
-                view.dispatch(tr);
-            }
+            cancel();
         });
 
         this.hrefInput.addEventListener("input", (e) => {
@@ -129,6 +161,7 @@ export class LinkEditor extends PluginInterfaceView<
         const parent = this.hrefInput.parentElement;
         const error = this.hrefError;
         parent.classList.add("has-error");
+        this.hrefInput.setAttribute("aria-invalid", "true");
         error.textContent = errorMessage;
         error.classList.remove("d-none");
     }
@@ -137,6 +170,7 @@ export class LinkEditor extends PluginInterfaceView<
         const parent = this.hrefInput.parentElement;
         const error = this.hrefError;
         parent.classList.remove("has-error");
+        this.hrefInput.removeAttribute("aria-invalid");
         error.textContent = "";
         error.classList.add("d-none");
     }
@@ -144,6 +178,7 @@ export class LinkEditor extends PluginInterfaceView<
     resetEditor(): void {
         this.hrefInput.value = "";
         this.textInput.value = "";
+        this.saveBtn.disabled = true;
         this.hideValidationError();
     }
 
@@ -190,12 +225,16 @@ export class LinkEditor extends PluginInterfaceView<
         );
 
         view.dispatch(tr);
+        if (this.dialog) {
+            view.focus();
+        }
     }
 
     update(view: EditorView): void {
+        const wasShown = this.isShown;
         super.update(view);
 
-        if (this.isShown) {
+        if (this.isShown && !wasShown) {
             const state = LINK_EDITOR_KEY.getState(view.state);
             if (state?.url) {
                 this.hrefInput.value = state.url;
@@ -206,33 +245,27 @@ export class LinkEditor extends PluginInterfaceView<
                 this.textInput.value = state.text;
             }
 
-            let tr = this.tryShowInterfaceTr(view.state);
-            if (tr) {
-                tr = LINK_EDITOR_KEY.forceHideTooltipTr(view.state.apply(tr));
-                view.dispatch(tr);
-            }
+            this.dialog?.showModal();
             this.hrefInput.focus();
-        } else {
+        } else if (!this.isShown && wasShown) {
             this.resetEditor();
-            const tr = this.tryHideInterfaceTr(view.state);
-            if (tr) {
-                view.dispatch(tr);
-            }
         }
     }
 
     destroy(): void {
-        // this.uploadField.remove();
+        this.dialog?.close();
+        this.dialog?.remove();
         this.viewContainer.remove();
     }
 
     buildInterface(container: Element): void {
         // add the view container to the menu area
-        container.appendChild(this.viewContainer);
+        container.appendChild(this.dialog || this.viewContainer);
     }
 
     destroyInterface(container: Element): void {
-        container.removeChild(this.viewContainer);
+        this.dialog?.close();
+        container.removeChild(this.dialog || this.viewContainer);
     }
 }
 
@@ -305,7 +338,8 @@ class LinkTooltip {
 
         this.content.innerHTML = escapeHTML`<div class="s-popover is-visible p4 w-auto wmx-initial wmn-initial js-link-tooltip"
             id="${popoverId}"
-            role="menu">
+            role="group"
+            aria-label="${_t("link_editor.title")}">
             <div class="s-popover--arrow"></div>
             <div class="d-flex ai-center">
                 <a href="${this.href}"
@@ -595,7 +629,10 @@ function tooltipIsShowing(linkDecos: DecorationSet): boolean {
  * Note: This is not a _NodeView_ because when dealing with links, we're dealing with
  * _marks_, not _nodes_.
  */
-export const linkEditorPlugin = (features: CommonmarkParserFeatures) =>
+export const linkEditorPlugin = (
+    features: CommonmarkParserFeatures,
+    display: "inline" | "dialog" = "inline"
+) =>
     new StatefulPlugin<LinkEditorPluginState>({
         key: LINK_EDITOR_KEY,
         state: {
@@ -615,10 +652,9 @@ export const linkEditorPlugin = (features: CommonmarkParserFeatures) =>
                 }
 
                 // update the linkTooltip and get the decorations
-                const decorations = value.linkTooltip.getDecorations(
-                    value,
-                    newState
-                );
+                const decorations = meta.shouldShow
+                    ? DecorationSet.empty
+                    : value.linkTooltip.getDecorations(value, newState);
 
                 return {
                     ...meta,
@@ -677,7 +713,7 @@ export const linkEditorPlugin = (features: CommonmarkParserFeatures) =>
             },
         },
         view(editorView): PluginView {
-            return new LinkEditor(editorView, features.validateLink);
+            return new LinkEditor(editorView, features.validateLink, display);
         },
     });
 
